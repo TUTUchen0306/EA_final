@@ -14,6 +14,18 @@ extract_list = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '1
 def content_loss(origin, cur):
 	return
 
+def style_loss(origin, cur):
+    return
+
+def fitness(origin, cur, extractor):
+    ori_vec = extractor(origin)
+    cur_vec = extractor(cur)
+
+    L_content = content_loss(ori_vec, cur_vec)
+    L_style = style_loss(ori_vec, cur_vec)
+
+    return a * L_content + b * L_style
+
 if __name__ == "__main__":
 
 model = models.vgg16(pretrained=True)
