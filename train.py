@@ -17,12 +17,13 @@ def content_loss(origin, cur):
 def style_loss(origin, cur):
     return
 
-def fitness(origin, cur, extractor):
-    ori_vec = extractor(origin)
+def fitness(content, style, cur, extractor):
+    content_vec = extractor(content)
+    style_vec = extractor(style)
     cur_vec = extractor(cur)
 
-    L_content = content_loss(ori_vec, cur_vec)
-    L_style = style_loss(ori_vec, cur_vec)
+    L_content = content_loss(content_vec, cur_vec)
+    L_style = style_loss(style_vec, cur_vec)
 
     return a * L_content + b * L_style
 
