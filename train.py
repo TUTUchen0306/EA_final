@@ -18,6 +18,9 @@ if __name__ == "__main__":
 
 model = models.vgg16(pretrained=True)
 
+
+# change maxPool layers to AvgPool layers inorder to avoid fading
+
 for i, layer in model.features.named_children():
     if isinstance(layer, torch.nn.MaxPool2d):
         model.features[int(i)] = nn.AvgPool2d(kernel_size=2, stride=2, padding=0)
