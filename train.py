@@ -7,21 +7,18 @@ from extract import FeatureExtractor
 from util import read_img
 
 parser = argparse.ArgumentParser(description="ES and GA picture style tranfer.")
-parser.add_argument('--alpha', type=float, default=8,
-                    help="alpha value")
-parser.add_argument('--beta', type=float, default=70,
-                    help="beta value")
-parser.add_argument('--algorithm', type=str, default="GA",
-                    help="algorithm type")
+parser.add_argument("--alpha", type=float, default=8, help="alpha value")
+parser.add_argument("--beta", type=float, default=70, help="beta value")
+parser.add_argument("--algorithm", type=str, default="GA", help="algorithm type")
 
 alpha = 0
 beta = 0
-device = 'cpu'
+device = "cpu"
 if torch.cuda.is_available():
-    device = 'cuda'
+    device = "cuda"
 print("Using device: {}".format(device))
 
-extract_list = ['0', '5', '10', '19', '28']
+extract_list = ["0", "5", "10", "19", "28"]
 
 
 def content_loss(origin, cur):
@@ -32,10 +29,12 @@ def content_loss(origin, cur):
         c_l += w * (1.0 / (channel * height * width)) * torch.mean((o - c) ** 2)
     return c_l[0]
 
+
 def gram_matrix(x):
     batch, channel, height, width = x.shape()
-    tx = x.view(channel, height*width)
+    tx = x.view(channel, height * width)
     return torch.mm(tx, tx.t())
+
 
 def style_loss(origin, cur):
     weight = [0.5, 1.0, 1.5, 3.0, 4.0]
@@ -47,6 +46,7 @@ def style_loss(origin, cur):
         t_l += w * (1.0 / (channel * height * width)) * torch.mean((O - C) ** 2)
     return t_l[0]
 
+
 def fitness(content, style, cur, extractor):
     content_vec = extractor(content)
     style_vec = extractor(style)
@@ -56,6 +56,7 @@ def fitness(content, style, cur, extractor):
     L_style = style_loss(style_vec, cur_vec)
 
     return a * L_content + b * L_style
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
