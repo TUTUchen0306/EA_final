@@ -14,5 +14,5 @@ class FeatureExtractor(nn.Module):
         for name, module in self.submodule._modules.items():
             x = module(x)
             if name in self.extracted_layers:
-                outputs += [x]
-        return outputs + [x]
+                outputs.append(x)
+        return outputs

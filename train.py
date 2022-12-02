@@ -4,6 +4,7 @@ import torch
 from torch import nn
 from torchvision import models
 from extract import FeatureExtractor
+from util import read_img
 
 parser = argparse.ArgumentParser(description="ES and GA picture style tranfer.")
 parser.add_argument('--alpha', type=float, default=8,
@@ -27,14 +28,24 @@ def content_loss(origin, cur):
     weight = [0.5, 1.0, 1.5, 3.0, 4.0]
     c_l = torch.Tensor([0])
     for o, c, w in zip(origin, cur, weight):
-        c_l += w * torch.mean((o - c) ** 2)
+        batch, channel, height, width = c.shape
+        c_l += w * (1.0 / (channel * height * width)) * torch.mean((o - c) ** 2)
     return c_l[0]
 
 def gram_matrix(x):
-    return
+    batch, channel, height, width = x.shape()
+    tx = x.view(channel, height*width)
+    return torch.mm(tx, tx.t())
 
 def style_loss(origin, cur):
-    return
+    weight = [0.5, 1.0, 1.5, 3.0, 4.0]
+    t_l = torch.Tensor([0])
+    for o, c, w in zip(origin, cur, weight):
+        batch, channel, height, width = c.shape
+        O = gram_matrix(o)
+        C = gram_matrix(c)
+        t_l += w * (1.0 / (channel * height * width)) * torch.mean((O - C) ** 2)
+    return t_l[0]
 
 def fitness(content, style, cur, extractor):
     content_vec = extractor(content)
@@ -66,3 +77,8 @@ if __name__ == "__main__":
 
     myextractor = FeatureExtractor(model, extract_list)
 
+    lighthouse = read_img("lighthouse.png")
+
+    lighthouse = torch.Tensor(lighthouse)
+
+    lighthouse = lighthouse.to(device)

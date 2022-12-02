@@ -2,12 +2,12 @@ import numpy as np
 from PIL import Image
 from torchvision import transforms
 
-def read_img(file_name, height=512, weight=512):
+def read_img(file_name, height=512, width=512):
 	image = Image.open(file_name)
 
 	image = image.convert('RGB')
 
-	loader=transforms.Compose([transforms.Resize((height, weight))])
+	loader=transforms.Compose([transforms.Resize((height, width))])
 	
 	image = loader(image)
 
@@ -18,7 +18,7 @@ def read_img(file_name, height=512, weight=512):
 
 	for h in range(height):
 		tr, tg, tb = [], [], []
-		for w in range(weight):	
+		for w in range(width):	
 			r, g, b = image[h][w]
 			tr.append(r)
 			tg.append(g)
