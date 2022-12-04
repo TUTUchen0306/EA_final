@@ -55,7 +55,7 @@ def fitness(content, style, cur, extractor):
     L_content = content_loss(content_vec, cur_vec)
     L_style = style_loss(style_vec, cur_vec)
 
-    return a * L_content + b * L_style
+    return alpha * L_content + beta * L_style
 
 
 if __name__ == "__main__":
