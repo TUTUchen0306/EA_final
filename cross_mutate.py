@@ -41,8 +41,8 @@ def crossover(arr_left, arr_right, argument):
             # 512 row
             for row in range(len(arr_left[0][color])):
                 for col in range(len(arr_left[0][color][row])):
-                    l = "{0:08b}".format(arr_left[0][color][row][col].tolist())
-                    r = "{0:08b}".format(arr_right[0][color][row][col].tolist())
+                    l = "{0:08b}".format(int(arr_left[0][color][row][col].tolist()))
+                    r = "{0:08b}".format(int(arr_right[0][color][row][col].tolist()))
                     # cut between cutPoint and cutPoint - 1
                     cutPoint = random.randint(1, len(l) - 1)
                     lL, lR = l[:cutPoint], l[cutPoint:]
@@ -64,8 +64,8 @@ def crossover(arr_left, arr_right, argument):
                 # cut between cutPoint and cutPoint - 1
                 cutPoint = random.randint(1, 8 - 1)
                 for color in range(3):
-                    l = "{0:08b}".format(arr_left[0][color][row][col].tolist())
-                    r = "{0:08b}".format(arr_right[0][color][row][col].tolist())
+                    l = "{0:08b}".format(int(arr_left[0][color][row][col].tolist()))
+                    r = "{0:08b}".format(int(arr_right[0][color][row][col].tolist()))
                     # cut between cutPoint and cutPoint - 1
                     cutPoint = random.randint(1, len(l) - 1)
                     lL, lR = l[:cutPoint], l[cutPoint:]
@@ -77,21 +77,22 @@ def crossover(arr_left, arr_right, argument):
         return newL, newR
 
 
-# generate random (1, 3, 512, 512) picture
-pic1 = read_img("lighthouse.png")
-pic2 = read_img("starry.jpg")
-# shape (1, 3, 512, 512)
-new_pic1 = noisy_img("lighthouse.png")
-new_pic2 = noisy_img("starry.jpg")
+if __name__ == "__main__":
+    # generate random (1, 3, 512, 512) picture
+    pic1 = read_img("lighthouse.png")
+    pic2 = read_img("starry.jpg")
+    # shape (1, 3, 512, 512)
+    new_pic1 = noisy_img("lighthouse.png")
+    new_pic2 = noisy_img("starry.jpg")
 
-newL, newR = crossover(new_pic1, new_pic2, "diff_point")
-# # uncomment to see examples
-# newL_reshape = shape_to_512_512_3(newL)
-# Image.fromarray(newL_reshape.astype("uint8"), "RGB").show()
-# newR_reshape = shape_to_512_512_3(newR)
-# Image.fromarray(newR_reshape.astype("uint8"), "RGB").show()
-newL, newR = crossover(new_pic1, new_pic2, "same_point")
-# newL_reshape = shape_to_512_512_3(newL)
-# Image.fromarray(newL_reshape.astype("uint8"), "RGB").show()
-# newR_reshape = shape_to_512_512_3(newR)
-# Image.fromarray(newR_reshape.astype("uint8"), "RGB").show()
+    newL, newR = crossover(new_pic1, new_pic2, "diff_point")
+    # # uncomment to see examples
+    # newL_reshape = shape_to_512_512_3(newL)
+    # Image.fromarray(newL_reshape.astype("uint8"), "RGB").show()
+    # newR_reshape = shape_to_512_512_3(newR)
+    # Image.fromarray(newR_reshape.astype("uint8"), "RGB").show()
+    newL, newR = crossover(new_pic1, new_pic2, "same_point")
+    # newL_reshape = shape_to_512_512_3(newL)
+    # Image.fromarray(newL_reshape.astype("uint8"), "RGB").show()
+    # newR_reshape = shape_to_512_512_3(newR)
+    # Image.fromarray(newR_reshape.astype("uint8"), "RGB").show()
