@@ -1,6 +1,5 @@
-import torch
+import numpy as np
 
 
-a = 10
-a = torch.Tensor([a])
-print(a)
+a = np.random.choice(10, 1)
+print(a[0])
