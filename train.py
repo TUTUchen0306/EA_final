@@ -12,7 +12,7 @@ from cross_mutate import noisy_img, crossover, mutation
 parser = argparse.ArgumentParser(description="ES and GA picture style tranfer.")
 parser.add_argument("--content", type=str, default="lighthouse.png", help="content img file name")
 parser.add_argument("--style", type=str, default="starry.jpg", help="style img file name")
-parser.add_argument("--alpha", type=float, default=2500.0, help="alpha value")
+parser.add_argument("--alpha", type=float, default=3500.0, help="alpha value")
 parser.add_argument("--beta", type=float, default=0.6, help="beta value")
 parser.add_argument("--algorithm", type=str, default="GA", help="algorithm type")
 parser.add_argument("--cut_point", type=str, default="same_point", help="cut point place")
@@ -92,11 +92,12 @@ def fitness(content, style, cur, extractor, times):
     L_style = style_loss(style_vec, cur_vec)
 
     tb = beta
+    ta = alpha
+    
+    ta = alpha * math.sqrt(times)
 
-    if times > 30:
-        tb = math.sqrt(times) * 0.12
 
-    return -(alpha * math.sqrt(times) * L_content + tb * L_style)
+    return -(ta * L_content + tb * L_style)
 
 def train_GA(content_img, style_img, extractor, number_of_G, generation_times, point_place):
     content_generation, style_generation = [], []
@@ -111,11 +112,20 @@ def train_GA(content_img, style_img, extractor, number_of_G, generation_times, p
 
     gen_size = len(content_generation)
 
-    rec = []
+    content_rec = []
+    style_rec = []
 
     for times in range(generation_times):
         content_pop_pool, style_pop_pool = [], []
         for i in range(gen_size):
+            if times > 20 and i > (gen_size-20):
+                cl, sl = len(content_rec), len(style_rec)
+                cr = np.random.choice(cl-1)
+                sr = np.random.choice(sl-1)
+                content_pop_pool.append([content_rec[cr][0], fitness(content, style, content_rec[cr][0], extractor, times)])
+                style_pop_pool.append([style_rec[sr][0], fitness(content, style, style_rec[sr][0], extractor, times)])
+                continue
+
             choose = np.random.choice(gen_size-1, 2)
             if content_generation[choose[0]][1] > content_generation[choose[1]][1]:
                 content_pop_pool.append(content_generation[choose[0]])
@@ -124,16 +134,9 @@ def train_GA(content_img, style_img, extractor, number_of_G, generation_times, p
             if style_generation[choose[0]][1] > style_generation[choose[1]][1]:
                 style_pop_pool.append(style_generation[choose[0]])
             else:
-                style_pop_pool.append(style_generation[choose[1]])           
+                style_pop_pool.append(style_generation[choose[1]])
 
         content_generation, style_generation = [], []
-        rec.append([content, fitness(content, style, content, extractor, times)])
-
-        if times > 30:
-            lr = len(rec)
-            c = np.random.choice(gen_size-1)
-            rc = np.random.choice(lr-1)
-            style_pop_pool[c] = rec[rc]
 
         for i in range(gen_size):
             choose = np.random.choice(gen_size-1, 2)
@@ -145,15 +148,24 @@ def train_GA(content_img, style_img, extractor, number_of_G, generation_times, p
             content_generation.append([c1, c1_fitness])
             style_generation.append([c2, c2_fitness])
 
-        content_pop_pool = sorted(content_pop_pool, key=lambda x : x[1])
+
 
         style_pop_pool = sorted(style_pop_pool, key=lambda x: x[1])
+        content_pop_pool = sorted(content_pop_pool, key=lambda x : x[1])
+
+        for i in range(20):
+            sc = np.random.choice(int((gen_size-1)/2))
+            style_rec.append(style_pop_pool[sc])
+            cc = np.random.choice(int((gen_size-1)/2))
+            content_rec.append(content_pop_pool[cc])
+
+        # content_rec.append([content, fitness(content, style, content, extractor, times)])
+        style_rec.append([style, fitness(content, style, style, extractor, times)])
 
 
-        if(times % 10 == 0):
-            print(f'times : {times}, largest content fitness value : {content_pop_pool[gen_size-1][1]}, largest style fitness value : {style_pop_pool[gen_size-1][1]}')
-            show_img(content_pop_pool[gen_size-1][0],times)
-            show_img(style_pop_pool[gen_size-1][0],times+1)
+        print(f'times : {times}, largest content fitness value : {content_pop_pool[gen_size-1][1]}, largest style fitness value : {style_pop_pool[gen_size-1][1]}')
+        show_img(content_pop_pool[gen_size-1][0], times, 'content')
+        show_img(style_pop_pool[gen_size-1][0], times, 'style')
 
     # for i in range(len(generation)):
     #     show_img(generation[i][0])
@@ -191,4 +203,4 @@ if __name__ == "__main__":
 
     # print(fitness(content, style, cur, myextractor))
 
-    train_GA(content_img, style_img, myextractor, 10, 1000, cut_point)
+    train_GA(content_img, style_img, myextractor, 100, 200, cut_point)

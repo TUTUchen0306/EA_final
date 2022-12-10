@@ -18,9 +18,9 @@ def read_img(file_name):
 
     return image_array
 
-def show_img(img, times):
+def show_img(img, times, name):
     img = shape_to_512_512_3(img)
-    Image.fromarray(img.astype("uint8"), "RGB").save(f'{times}.jpg')
+    Image.fromarray(img.astype("uint8"), "RGB").save(f'{name}_{times}.jpg')
 
     return
 

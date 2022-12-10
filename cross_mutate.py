@@ -62,11 +62,13 @@ def crossover(arr_left, arr_right, argument, times):
     # three color in same pixel has same cutPoint
     elif argument == "same_point":
         # 3 color
-        group = 4
-        if times == 30:
-            group = 3
-        elif times == 50:
-            group = 2
+        rg = random.randint(0, 5)
+        group = pow(2, rg)
+        # group = int(32 / math.sqrt(times+1))
+        # if times == 30:
+        #     group = 3
+        # elif times == 50:
+        #     group = 2
         # newL = copy.deepcopy(arr_left)
         # newR = copy.deepcopy(arr_right)
         # for color in range(len(arr_left[0])):
@@ -95,11 +97,26 @@ def crossover(arr_left, arr_right, argument, times):
         for row in range(int(len(arr_left[0][0]) / group)):
             for col in range(int(len(arr_left[0][0][row]) / group)):
                 # cut between cutPoint and cutPoint - 1
-                cutPoint = random.uniform(-0.1, 1.1)
+                cutPoint = random.uniform(-0.15, 1.15)
+
+                # content_cross_row = np.random.choice(int(len(arr_left[0][0]) / group)-1)
+                # content_cross_col = np.random.choice(int(len(arr_left[0][0][row]) / group)-1)
+
+                # style_cross_row = np.random.choice(int(len(arr_left[0][0]) / group)-1)
+                # style_cross_col = np.random.choice(int(len(arr_left[0][0][row]) / group)-1)
+
                 for i in range(group):
                     for j in range(group):
                         nrow = row * group + i
                         ncol = col * group + j
+
+                        # n_ccr = content_cross_row * group + i
+                        # n_ccc = content_cross_col * group + j
+
+                        # n_scr = style_cross_row * group + i
+                        # n_scc = style_cross_col * group + j
+
+
                         for color in range(3):
                             # l = "{0:08b}".format(int(arr_left[0][color][nrow][ncol].tolist()))
                             # r = "{0:08b}".format(int(arr_right[0][color][nrow][ncol].tolist()))
@@ -113,16 +130,37 @@ def crossover(arr_left, arr_right, argument, times):
                             # newR[0][color][nrow][ncol] = int(rNew, 2)
 
                             tl, tr = arr_left[0][color][nrow][ncol], arr_right[0][color][nrow][ncol]
+                            # cc = arr_right[0][color][n_ccr][n_ccc]
+                            # sc = arr_left[0][color][n_scr][n_scc]
+
                             nl = cutPoint * tl + (1 - cutPoint) * tr
                             nr = (1 - cutPoint) * tl + cutPoint * tr
-                            if nl < 0:
-                                nl = min(tl,tr)
-                            elif nl > 255:
-                                nl = max(tl,tr)
-                            if nr < 0:
-                                nr = min(tl, tr)
-                            elif nr > 255:
-                                nr = max(tl, tr)
+
+                            if nl < 0 or nl > 255 or nr < 0 or nr > 255:
+                                mx = [1, 1, 1, 0, 0, -1, -1, -1]
+                                my = [1, 0, -1, 1, -1, 1, 0, -1]
+
+                                l_mean, r_mean = 0, 0
+                                pixel_num = 0
+
+                                for mi in range(8):
+                                    nx = nrow + mx[mi]
+                                    ny = ncol + my[mi]
+
+                                    if nx >= 512 or nx < 0 or ny >= 512 or ny < 0:
+                                        continue
+                                    l_mean += arr_left[0][color][nx][ny]
+                                    r_mean += arr_right[0][color][nx][ny]
+                                    pixel_num += 1
+
+                                l_mean = int(l_mean / pixel_num)
+                                r_mean = int(r_mean / pixel_num)
+
+                                if nl < 0 or nl > 255:
+                                    nl = l_mean
+                                if nr < 0 or nr > 255:
+                                    nr = r_mean
+
                             newL[0][color][nrow][ncol] = nl
                             newR[0][color][nrow][ncol] = nr
 
