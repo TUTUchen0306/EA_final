@@ -31,11 +31,17 @@ def noisy_img(file_name):
     # Image.fromarray(newpic.astype("uint8"), "RGB").show()
     return newpic_reshape.astype(int)
 
+
 def mutation(img):
     img_reshape = shape_to_512_512_3(img)
     new_img = noisy(img_reshape)
     new_img_reshape = shape_to_1_3_512_512(new_img)
     return new_img_reshape.astype(int)
+
+
+def init_step(size, step_size):
+    return np.full((size), step_size)
+
 
 # 1 point crossover with probability p = 1.0, no mutation operator
 def crossover(arr_left, arr_right, argument, times):
@@ -93,7 +99,6 @@ def crossover(arr_left, arr_right, argument, times):
         newL = np.zeros((1, 3, 512, 512))
         newR = np.zeros((1, 3, 512, 512))
 
-
         for row in range(int(len(arr_left[0][0]) / group)):
             for col in range(int(len(arr_left[0][0][row]) / group)):
                 # cut between cutPoint and cutPoint - 1
@@ -116,7 +121,6 @@ def crossover(arr_left, arr_right, argument, times):
                         # n_scr = style_cross_row * group + i
                         # n_scc = style_cross_col * group + j
 
-
                         for color in range(3):
                             # l = "{0:08b}".format(int(arr_left[0][color][nrow][ncol].tolist()))
                             # r = "{0:08b}".format(int(arr_right[0][color][nrow][ncol].tolist()))
@@ -129,7 +133,10 @@ def crossover(arr_left, arr_right, argument, times):
                             # newL[0][color][nrow][ncol] = int(lNew, 2)
                             # newR[0][color][nrow][ncol] = int(rNew, 2)
 
-                            tl, tr = arr_left[0][color][nrow][ncol], arr_right[0][color][nrow][ncol]
+                            tl, tr = (
+                                arr_left[0][color][nrow][ncol],
+                                arr_right[0][color][nrow][ncol],
+                            )
                             # cc = arr_right[0][color][n_ccr][n_ccc]
                             # sc = arr_left[0][color][n_scr][n_scc]
 
@@ -176,13 +183,13 @@ if __name__ == "__main__":
     new_pic2 = noisy_img("starry.jpg")
 
     newL, newR = crossover(new_pic1, new_pic2, "diff_point")
-    # # uncomment to see examples
-    # newL_reshape = shape_to_512_512_3(newL)
-    # Image.fromarray(newL_reshape.astype("uint8"), "RGB").show()
-    # newR_reshape = shape_to_512_512_3(newR)
-    # Image.fromarray(newR_reshape.astype("uint8"), "RGB").show()
-    newL, newR = crossover(new_pic1, new_pic2, "same_point")
-    # newL_reshape = shape_to_512_512_3(newL)
-    # Image.fromarray(newL_reshape.astype("uint8"), "RGB").show()
-    # newR_reshape = shape_to_512_512_3(newR)
-    # Image.fromarray(newR_reshape.astype("uint8"), "RGB").show()
+    # # # uncomment to see examples
+    # # newL_reshape = shape_to_512_512_3(newL)
+    # # Image.fromarray(newL_reshape.astype("uint8"), "RGB").show()
+    # # newR_reshape = shape_to_512_512_3(newR)
+    # # Image.fromarray(newR_reshape.astype("uint8"), "RGB").show()
+    # newL, newR = crossover(new_pic1, new_pic2, "same_point")
+    # # newL_reshape = shape_to_512_512_3(newL)
+    # # Image.fromarray(newL_reshape.astype("uint8"), "RGB").show()
+    # # newR_reshape = shape_to_512_512_3(newR)
+    # # Image.fromarray(newR_reshape.astype("uint8"), "RGB").show()
