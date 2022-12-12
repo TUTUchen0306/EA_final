@@ -7,6 +7,7 @@ from torchvision import models
 from extract import FeatureExtractor
 from util import read_img, show_img
 from cross_mutate import noisy_img, crossover, mutation
+import copy
 
 
 parser = argparse.ArgumentParser(description="ES and GA picture style tranfer.")
@@ -220,12 +221,9 @@ def train_ES(content_img, style_img, extractor, generation_times):
     # print("type", type(content_generation[0][0]))
     gen_size = 2  # content and style?
 
-    # content_rec = []
-    # style_rec = []
-
     # ES stuff
     img_size = 3 * 512 * 512
-    sigma = [10, 30, 50]  # try sigma[0] first
+    sigma = 30  # try sigma[0] first
     # dic = {}
     tao_pron = 1.0 / math.sqrt(2.0 * img_size)
     tao = 1.0 / math.sqrt(2.0 * math.sqrt(img_size))
@@ -234,7 +232,7 @@ def train_ES(content_img, style_img, extractor, generation_times):
     # parent is content & / | style, fitness is content / style_generation[1]
     par = [content.ravel(), style.ravel()]
     # content step, style step
-    step = [np.full((img_size), sigma[0]), np.full((img_size), sigma[0])]
+    step = [np.full((img_size), sigma), np.full((img_size), sigma)]
     # termination criteria
     flag_good = [False, False]
     for times in range(generation_times):
@@ -242,8 +240,8 @@ def train_ES(content_img, style_img, extractor, generation_times):
         print("content par: ", par[0][:10], " style par: ", par[1][:10])
         # content_pop_pool, style_pop_pool = [], []
         global_step = np.random.normal(0, 1)
-        child_step = step.copy()
-        child = par.copy()
+        child_step = copy.deepcopy(step)
+        child = copy.deepcopy(par)
         for i in range(gen_size):
             for small_step in range(len(step[0])):
                 sigma_pron = step[i][small_step] * math.exp(
@@ -258,7 +256,7 @@ def train_ES(content_img, style_img, extractor, generation_times):
             child[i] = child[i].astype(int)
             child[i] = np.clip(child[i], 0, 255)
             # print(type(child[i]))
-            # print(child[i].shape)
+        print("content chi: ", child[0][:10], " style chi: ", child[1][:10])
         c1_fitness = fitness(
             content, style, child[0].reshape((1, 3, 512, 512)), extractor, times
         ).item()
@@ -266,6 +264,7 @@ def train_ES(content_img, style_img, extractor, generation_times):
         c2_fitness = fitness(
             content, style, child[1].reshape((1, 3, 512, 512)), extractor, times
         ).item()
+        print("child fit: ", c1_fitness, c2_fitness)
         # print(c2_fitness)
         # print(type(c2_fitness))
         # termination criteria
@@ -274,18 +273,31 @@ def train_ES(content_img, style_img, extractor, generation_times):
             print(flag_good)
         else:
             if c1_fitness > content_generation[times][1]:
-                par[0] = child[0].copy()
-                step[0] = child_step[0].copy()
-                content_generation.append([par[0].copy(), c1_fitness])
+                print("content good :)")
+                par[0] = copy.deepcopy(child[0])
+                step[0] = copy.deepcopy(child_step[0])
+                content_generation.append([copy.deepcopy(par[0]), c1_fitness])
             else:
-                content_generation.append([par[0].copy(), content_generation[times][1]])
+                print("content bad :(")
+                content_generation.append(
+                    [copy.deepcopy(par[0]), content_generation[times][1]]
+                )
             if c2_fitness > style_generation[times][1]:
-                par[1] = child[1].copy()
-                step[1] = child_step[1].copy()
-                style_generation.append([par[1].copy(), c2_fitness])
+                print("style good :)")
+                par[1] = copy.deepcopy(child[1])
+                step[1] = copy.deepcopy(child_step[1])
+                style_generation.append([copy.deepcopy(par[1]), c2_fitness])
             else:
-                style_generation.append([par[1].copy(), style_generation[times][1]])
-        # print(par[0][:10], "::::::::", par[1][:10])
+                print("style bad :(")
+                style_generation.append(
+                    [copy.deepcopy(par[1]), style_generation[times][1]]
+                )
+            print(
+                "content par: ",
+                par[0][:10],
+                " style par: ",
+                par[1][:10],
+            )
         if flag_good[0] == True | flag_good[1] == True:
             print("================== termination criteria met ===================")
             print(
